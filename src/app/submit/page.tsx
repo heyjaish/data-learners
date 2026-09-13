@@ -31,7 +31,7 @@ export default function SubmitInsightPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!contributorName.trim()) {
@@ -45,47 +45,52 @@ export default function SubmitInsightPage() {
 
     setIsSubmitting(true);
 
-    // Auto-derive clean title if not provided
-    let derivedTitle = title.trim();
-    if (!derivedTitle) {
-      const firstLine = content.trim().split("\n")[0].replace(/^[*#\d.\s]+/, "").trim();
-      derivedTitle = firstLine.length > 5 && firstLine.length < 90
-        ? firstLine
-        : `Career Advice & Guidance for ${domain}`;
+    try {
+      // Auto-derive clean title if not provided
+      let derivedTitle = title.trim();
+      if (!derivedTitle) {
+        const firstLine = content.trim().split("\n")[0].replace(/^[*#\d.\s]+/, "").trim();
+        derivedTitle = firstLine.length > 5 && firstLine.length < 90
+          ? firstLine
+          : `Career Advice & Guidance for ${domain}`;
+      }
+
+      // Auto-derive clean summary if not provided
+      const derivedSummary = summary.trim() || (content.trim().slice(0, 150).replace(/[*#]/g, "") + "...");
+
+      const slug = (contributorName + "-" + domain)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "") + "-" + Date.now().toString().slice(-4);
+
+      const newInsight: InsightItem = {
+        id: slug,
+        contributorName: contributorName.trim(),
+        contributorRole: contributorRole.trim() || `${domain} Professional`,
+        company: company.trim() || "Tech Industry",
+        experienceYears: experienceYears.trim() || "Experienced",
+        linkedinUrl: linkedinUrl.trim() || undefined,
+        domain: domain,
+        title: derivedTitle,
+        summary: derivedSummary,
+        content: content.trim(),
+        createdAt: new Date().toISOString().split("T")[0],
+        readTime: `${Math.max(2, Math.ceil(content.split(/\s+/).length / 180))} min read`,
+        upvotes: 0,
+        comments: []
+      };
+
+      await saveLocalInsight(newInsight);
+
+      setSuccessMessage(true);
+      setTimeout(() => {
+        router.push(`/insights/${slug}`);
+      }, 700);
+    } catch (err) {
+      console.error("Submission error:", err);
+      setIsSubmitting(false);
+      alert("Something went wrong while saving. Please try again.");
     }
-
-    // Auto-derive clean summary if not provided
-    const derivedSummary = summary.trim() || (content.trim().slice(0, 150).replace(/[*#]/g, "") + "...");
-
-    const slug = (contributorName + "-" + domain)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "") + "-" + Date.now().toString().slice(-4);
-
-    const newInsight: InsightItem = {
-      id: slug,
-      contributorName: contributorName.trim(),
-      contributorRole: contributorRole.trim() || `${domain} Professional`,
-      company: company.trim() || "Tech Industry",
-      experienceYears: experienceYears.trim() || "Experienced",
-      linkedinUrl: linkedinUrl.trim() || undefined,
-      domain: domain,
-      title: derivedTitle,
-      summary: derivedSummary,
-      content: content.trim(),
-      createdAt: new Date().toISOString().split("T")[0],
-      readTime: `${Math.max(2, Math.ceil(content.split(/\s+/).length / 180))} min read`,
-      upvotes: 0,
-      comments: []
-    };
-
-
-    saveLocalInsight(newInsight);
-
-    setSuccessMessage(true);
-    setTimeout(() => {
-      router.push(`/insights/${slug}`);
-    }, 1000);
   };
 
   return (

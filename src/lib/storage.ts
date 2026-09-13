@@ -2,8 +2,9 @@ import { InsightItem, CommentItem } from "./types";
 import { initialInsights } from "./initialData";
 import { supabase, isSupabaseConfigured } from "./supabase";
 
-const STORAGE_KEY = "data_learners_community_insights_v3";
-const DELETED_KEY = "data_learners_deleted_ids_v3";
+const STORAGE_KEY = "data_learners_community_insights_v4";
+const DELETED_KEY = "data_learners_deleted_ids_v4";
+const UPVOTED_POSTS_KEY = "data_learners_upvoted_posts_v3";
 
 function getDeletedIds(): Set<string> {
   if (typeof window === "undefined") return new Set();
@@ -41,8 +42,10 @@ export function toInsightItem(row: any): InsightItem {
     content: row.content || "",
     createdAt: row.created_at || row.createdAt || new Date().toISOString().split("T")[0],
     readTime: row.read_time || row.readTime || "3 min read",
-    upvotes: typeof row.upvotes === "number" ? row.upvotes : 0,
-    comments: Array.isArray(row.comments) ? row.comments : []
+    upvotes: typeof row.upvotes === "number" ? Math.max(0, row.upvotes) : 0,
+    comments: Array.isArray(row.comments)
+      ? row.comments.filter((c: any) => c && c.id !== "c-1" && c.author !== "Pooja")
+      : []
   };
 }
 
@@ -61,9 +64,26 @@ export function toDbRow(item: InsightItem): any {
     content: item.content,
     created_at: item.createdAt,
     read_time: item.readTime,
-    upvotes: typeof item.upvotes === "number" ? item.upvotes : 0,
-    comments: item.comments || []
+    upvotes: typeof item.upvotes === "number" ? Math.max(0, item.upvotes) : 0,
+    comments: Array.isArray(item.comments) ? item.comments : []
   };
+}
+
+// Strip markdown characters (*, #, _, `, etc.) for clean card preview text
+export function cleanMarkdownForPreview(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/^#+\s+/gm, "")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/_([^_]+)_/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/^>\s+/gm, "")
+    .replace(/^[-*+]\s+/gm, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 // Async function to fetch latest data directly from Supabase
@@ -76,7 +96,7 @@ export async function fetchRemoteInsights(): Promise<InsightItem[]> {
     const { data, error } = await supabase
       .from("insights")
       .select("*")
-      .order("upvotes", { ascending: false });
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.warn("Supabase fetch error, using local cache:", error.message);
@@ -84,12 +104,35 @@ export async function fetchRemoteInsights(): Promise<InsightItem[]> {
     }
 
     if (data && data.length > 0) {
-      const items = data.map(toInsightItem);
-      // Sync into localStorage for instant load on subsequent visits
+      const remoteItems = data.map(toInsightItem);
+      const deletedIds = getDeletedIds();
+
+      // Filter out locally deleted items
+      const validRemote = remoteItems.filter((item) => !deletedIds.has(item.id));
+
       if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        const saved = localStorage.getItem(STORAGE_KEY);
+        let localItems: InsightItem[] = [];
+        if (saved) {
+          try {
+            localItems = JSON.parse(saved);
+          } catch {
+            localItems = [];
+          }
+        }
+
+        const remoteIdSet = new Set(validRemote.map((r) => r.id));
+        const merged = [...validRemote];
+        for (const local of localItems) {
+          if (!remoteIdSet.has(local.id) && !deletedIds.has(local.id)) {
+            merged.push(local);
+          }
+        }
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
       }
-      return items;
+
+      return validRemote;
     }
 
     return getLocalInsights();
@@ -97,22 +140,6 @@ export async function fetchRemoteInsights(): Promise<InsightItem[]> {
     console.warn("Supabase network error:", err);
     return getLocalInsights();
   }
-}
-
-let isSyncing = false;
-function triggerBackgroundSync() {
-  if (typeof window === "undefined" || isSyncing || !isSupabaseConfigured || !supabase) return;
-  isSyncing = true;
-  fetchRemoteInsights()
-    .then((remoteItems) => {
-      isSyncing = false;
-      if (remoteItems && remoteItems.length > 0) {
-        window.dispatchEvent(new Event("data-learners-storage-updated"));
-      }
-    })
-    .catch(() => {
-      isSyncing = false;
-    });
 }
 
 export function getLocalInsights(): InsightItem[] {
@@ -130,33 +157,26 @@ export function getLocalInsights(): InsightItem[] {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } else {
       items = JSON.parse(saved);
-      const existingIds = new Set(items.map((i) => i.id));
-      for (const init of initialInsights) {
-        if (!existingIds.has(init.id) && !deletedIds.has(init.id)) {
-          items.push(init);
-        }
-      }
     }
 
     const activeItems = items
       .filter((item) => !deletedIds.has(item.id))
-      .map((item) => {
-        // Clean out legacy mock comments if present in cache
-        const cleanedComments = (Array.isArray(item.comments) ? item.comments : []).filter(
-          (c) => c.id !== "c-1" && c.author !== "Pooja"
-        );
-        return {
-          ...item,
-          upvotes: typeof item.upvotes === "number" ? item.upvotes : 0,
-          comments: cleanedComments
-        };
-      });
+      .map((item) => ({
+        ...item,
+        upvotes: typeof item.upvotes === "number" ? Math.max(0, item.upvotes) : 0,
+        comments: Array.isArray(item.comments)
+          ? item.comments.filter((c) => c && c.id !== "c-1" && c.author !== "Pooja")
+          : []
+      }));
 
-    // Sort by upvotes (highest first)
-    activeItems.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0));
-
-    // Proactively sync from remote Supabase in background
-    triggerBackgroundSync();
+    // Sort: highest upvotes first, then newest first
+    activeItems.sort((a, b) => {
+      const upvoteDiff = (b.upvotes || 0) - (a.upvotes || 0);
+      if (upvoteDiff !== 0) return upvoteDiff;
+      const dateA = new Date(a.createdAt).getTime() || 0;
+      const dateB = new Date(b.createdAt).getTime() || 0;
+      return dateB - dateA;
+    });
 
     return activeItems;
   } catch (error) {
@@ -165,14 +185,14 @@ export function getLocalInsights(): InsightItem[] {
   }
 }
 
-export function saveLocalInsight(newInsight: InsightItem): InsightItem[] {
+export async function saveLocalInsight(newInsight: InsightItem): Promise<InsightItem[]> {
   const cleanInsight: InsightItem = {
     ...newInsight,
-    upvotes: typeof newInsight.upvotes === "number" ? newInsight.upvotes : 0,
+    upvotes: typeof newInsight.upvotes === "number" ? Math.max(0, newInsight.upvotes) : 0,
     comments: newInsight.comments || []
   };
 
-  // 1. Optimistic local update for instant UI feedback
+  // 1. Instant local update
   if (typeof window !== "undefined") {
     try {
       const current = getLocalInsights();
@@ -191,22 +211,18 @@ export function saveLocalInsight(newInsight: InsightItem): InsightItem[] {
     }
   }
 
-  // 2. Asynchronous sync to Supabase
+  // 2. Await Cloud Supabase sync
   if (isSupabaseConfigured && supabase) {
-    (async () => {
-      try {
-        const { error } = await supabase.from("insights").upsert(toDbRow(cleanInsight));
-        if (error) console.error("Supabase upsert error:", error);
-      } catch (err) {
-        console.error("Supabase save network error:", err);
-      }
-    })();
+    try {
+      const { error } = await supabase.from("insights").upsert(toDbRow(cleanInsight));
+      if (error) console.error("Supabase upsert error:", error);
+    } catch (err) {
+      console.error("Supabase save network error:", err);
+    }
   }
 
-  return [cleanInsight, ...initialInsights];
+  return getLocalInsights();
 }
-
-const UPVOTED_POSTS_KEY = "data_learners_upvoted_posts_v2";
 
 export function hasUserUpvoted(id: string): boolean {
   if (typeof window === "undefined") return false;

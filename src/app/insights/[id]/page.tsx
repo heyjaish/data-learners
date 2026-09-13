@@ -230,13 +230,20 @@ export default function InsightDetailPage() {
         {/* Quick Summary Callout */}
         {insight.summary && (
           <div className="rounded-xl border-l-4 border-blue-600 bg-blue-50/50 p-3.5 sm:p-4 text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
-            &ldquo;{insight.summary}&rdquo;
+            <ReactMarkdown
+              components={{
+                p: ({ node, ...props }) => <p className="leading-relaxed" {...props} />,
+                strong: ({ node, ...props }) => <strong className="font-bold text-slate-900" {...props} />
+              }}
+            >
+              {insight.summary}
+            </ReactMarkdown>
           </div>
         )}
 
         {/* Full Long-Form Content with Markdown & Bold parsing */}
         <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-9 shadow-sm">
-          <div className="text-slate-800 text-sm sm:text-base leading-relaxed font-normal">
+          <div className="text-slate-800 text-sm sm:text-base leading-relaxed font-normal whitespace-pre-line">
             <ReactMarkdown
               components={{
                 h1: ({ node, ...props }) => <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mt-6 mb-3" {...props} />,

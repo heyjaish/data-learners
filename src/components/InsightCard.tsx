@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { InsightItem } from "@/lib/types";
-import { hasUserUpvoted, toggleUpvoteLocalInsight } from "@/lib/storage";
+import { hasUserUpvoted, toggleUpvoteLocalInsight, cleanMarkdownForPreview } from "@/lib/storage";
 import { ArrowRight, Clock, Building2, Briefcase, ExternalLink, ArrowBigUp, MessageSquare } from "lucide-react";
 
 interface InsightCardProps {
@@ -116,7 +116,7 @@ export default function InsightCard({ insight }: InsightCardProps) {
             </h4>
           </Link>
           <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3">
-            {insight.summary || insight.content.slice(0, 150) + "..."}
+            {cleanMarkdownForPreview(insight.summary || insight.content.slice(0, 160) + "...")}
           </p>
         </div>
       </div>
