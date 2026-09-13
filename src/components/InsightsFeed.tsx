@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Domain, InsightItem } from "@/lib/types";
-import { getLocalInsights } from "@/lib/storage";
+import { getLocalInsights, fetchRemoteInsights } from "@/lib/storage";
 import InsightCard from "./InsightCard";
 
 interface InsightsFeedProps {
@@ -23,6 +23,12 @@ export default function InsightsFeed({ initialData = [] }: InsightsFeedProps) {
 
   useEffect(() => {
     setInsights(getLocalInsights());
+
+    fetchRemoteInsights().then((remote) => {
+      if (remote && remote.length > 0) {
+        setInsights(remote);
+      }
+    });
 
     const handleStorageUpdate = () => {
       setInsights(getLocalInsights());

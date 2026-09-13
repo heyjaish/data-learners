@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import { InsightItem, CommentItem } from "@/lib/types";
-import { getInsightById, upvoteLocalInsight, addCommentToInsight } from "@/lib/storage";
+import { getInsightById, upvoteLocalInsight, addCommentToInsight, fetchRemoteInsights } from "@/lib/storage";
 import { siteConfig } from "@/lib/config";
 import {
   ArrowLeft,
@@ -41,9 +41,15 @@ export default function InsightDetailPage() {
     if (item) {
       setInsight(item);
       setUpvotes(item.upvotes || 1);
-    } else {
-      setInsight(null);
     }
+    // Always sync latest upvotes/comments from remote Supabase
+    fetchRemoteInsights().then((remote) => {
+      const found = remote.find((r) => r.id === id);
+      if (found) {
+        setInsight(found);
+        setUpvotes(found.upvotes || 1);
+      }
+    });
   }, [id]);
 
   if (!insight) {

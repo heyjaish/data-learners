@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { InsightItem } from "@/lib/types";
-import { getLocalInsights, deleteLocalInsight } from "@/lib/storage";
+import { getLocalInsights, deleteLocalInsight, fetchRemoteInsights } from "@/lib/storage";
 import { isAdminAuthenticated, setAdminAuthenticated } from "@/lib/auth";
 import {
   ShieldCheck,
@@ -30,6 +30,12 @@ export default function AdminDashboardPage() {
     }
     setInsights(getLocalInsights());
     setLoading(false);
+
+    fetchRemoteInsights().then((remote) => {
+      if (remote && remote.length > 0) {
+        setInsights(remote);
+      }
+    });
 
     // Listen for any storage updates
     const handleStorageUpdate = () => {
