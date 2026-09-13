@@ -42,76 +42,78 @@ export default function InsightCard({ insight }: InsightCardProps) {
     .toUpperCase();
 
   return (
-    <article className="group flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-lg hover:border-slate-300/90 transition-all duration-200">
+    <article className="group flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-7 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-md hover:border-slate-300 transition-all duration-200">
       <div>
         {/* Contributor Profile Header */}
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3.5">
-            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl font-bold text-white text-sm ${avatarColor} shadow-sm ring-2 ring-white`}>
+          <div className="flex items-center gap-3">
+            <div className={`flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl font-bold text-white text-xs sm:text-sm ${avatarColor} shadow-sm ring-2 ring-white`}>
               {initials}
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                  {insight.contributorName}
-                </h3>
+                <Link href={`/insights/${insight.id}`}>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                    {insight.contributorName}
+                  </h3>
+                </Link>
                 {insight.linkedinUrl && (
                   <a
                     href={insight.linkedinUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     title="LinkedIn Profile"
-                    className="text-slate-400 hover:text-blue-600 transition-colors"
+                    className="text-slate-400 hover:text-blue-600 transition-colors p-0.5"
                   >
-                    <ExternalLink className="h-3.5 w-3.5" />
+                    <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                   </a>
                 )}
               </div>
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500 mt-0.5">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] sm:text-xs text-slate-500 mt-0.5">
                 <span className="font-semibold text-slate-700 flex items-center gap-1">
-                  <Briefcase className="h-3 w-3 text-slate-400" />
+                  <Briefcase className="h-3 w-3 text-slate-400 shrink-0" />
                   {insight.contributorRole}
                 </span>
                 <span>•</span>
                 <span className="flex items-center gap-1 text-slate-600">
-                  <Building2 className="h-3 w-3 text-slate-400" />
+                  <Building2 className="h-3 w-3 text-slate-400 shrink-0" />
                   {insight.company}
                 </span>
               </div>
             </div>
           </div>
 
-          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold tracking-wide ${badgeStyle}`}>
+          <span className={`shrink-0 inline-flex items-center rounded-full border px-2 sm:px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold tracking-wide ${badgeStyle}`}>
             {insight.domain}
           </span>
         </div>
 
         {/* Title & Preview */}
-        <div className="mt-5">
+        <div className="mt-4 sm:mt-5">
           <Link href={`/insights/${insight.id}`}>
-            <h4 className="text-lg font-bold text-slate-900 leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors">
+            <h4 className="text-base sm:text-lg font-bold text-slate-900 leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors">
               {insight.title}
             </h4>
           </Link>
-          <p className="mt-2.5 text-sm text-slate-600 leading-relaxed line-clamp-3">
-            {insight.summary || insight.content.slice(0, 160) + "..."}
+          <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3">
+            {insight.summary || insight.content.slice(0, 150) + "..."}
           </p>
         </div>
       </div>
 
       {/* Footer / Read Advice Action */}
-      <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4 text-xs">
-        <div className="flex items-center gap-1.5 text-slate-400 font-medium">
-          <Clock className="h-3.5 w-3.5" />
+      <div className="mt-5 sm:mt-6 flex items-center justify-between border-t border-slate-100 pt-3.5 sm:pt-4 text-xs">
+        <div className="flex items-center gap-1 text-slate-400 font-medium text-[11px] sm:text-xs">
+          <Clock className="h-3.5 w-3.5 shrink-0" />
           <span>{insight.readTime || "4 min read"}</span>
         </div>
 
         <Link
           href={`/insights/${insight.id}`}
-          className="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-700 transition-colors group-hover:translate-x-0.5 transition-transform"
+          className="inline-flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-700 transition-colors py-1 pl-2"
         >
           <span>Read Advice</span>
-          <ArrowRight className="h-3.5 w-3.5" />
+          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
     </article>
