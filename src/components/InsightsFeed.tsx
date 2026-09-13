@@ -24,10 +24,17 @@ export default function InsightsFeed({ initialData = [] }: InsightsFeedProps) {
   const [selectedDomain, setSelectedDomain] = useState<Domain>("All");
 
   useEffect(() => {
-    const local = getLocalInsights();
-    if (local && local.length > 0) {
-      setInsights(local);
-    }
+    // Initial sync with local storage
+    setInsights(getLocalInsights());
+
+    // Auto-update if any item is deleted or added in admin/submit
+    const handleStorageUpdate = () => {
+      setInsights(getLocalInsights());
+    };
+    window.addEventListener("data-learners-storage-updated", handleStorageUpdate);
+    return () => {
+      window.removeEventListener("data-learners-storage-updated", handleStorageUpdate);
+    };
   }, []);
 
   const filteredInsights = useMemo(() => {

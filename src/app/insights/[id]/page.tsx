@@ -28,11 +28,14 @@ export default function InsightDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    const item = getInsightById(id) || initialInsights.find((i) => i.id === id);
+    const item = getInsightById(id);
     if (item) {
       setInsight(item);
+    } else {
+      setInsight(null);
     }
   }, [id]);
+
 
   if (!insight) {
     return (

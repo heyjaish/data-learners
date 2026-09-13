@@ -1,8 +1,8 @@
-// Simple, reliable hardcoded admin credentials
+// Secure admin authentication credentials
 export const ADMIN_CREDENTIALS = {
   email: "admin@datalearners.com",
   username: "admin",
-  password: "adminpassword123",
+  password: "DL@2024#SecureAdmin!",
 };
 
 const AUTH_KEY = "data_learners_admin_session";
