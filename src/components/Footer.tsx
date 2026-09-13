@@ -96,13 +96,20 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 border-t border-slate-100 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-          <p>© {new Date().getFullYear()} {siteConfig.communityName}. Open community project for data learners.</p>
+          <div className="flex items-center gap-3">
+            <p>© {new Date().getFullYear()} {siteConfig.communityName}. Open community project for data learners.</p>
+            <span>•</span>
+            <Link href="/admin/login" className="text-slate-400 hover:text-slate-700 transition-colors">
+              Admin Portal
+            </Link>
+          </div>
           <div className="flex items-center gap-1">
             <span>Curated with</span>
             <Heart className="h-3.5 w-3.5 text-rose-500 fill-rose-500" />
             <span>for aspiring data professionals.</span>
           </div>
         </div>
+
       </div>
     </footer>
   );

@@ -45,7 +45,21 @@ export function saveLocalInsight(newInsight: InsightItem): InsightItem[] {
   }
 }
 
+export function deleteLocalInsight(id: string): InsightItem[] {
+  if (typeof window === "undefined") return initialInsights;
+  try {
+    const current = getLocalInsights();
+    const filtered = current.filter((item) => item.id !== id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+    return filtered;
+  } catch (error) {
+    console.error("Failed to delete from localStorage:", error);
+    return initialInsights;
+  }
+}
+
 export function getInsightById(id: string): InsightItem | undefined {
   const all = getLocalInsights();
   return all.find((item) => item.id === id);
 }
+
