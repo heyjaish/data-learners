@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import { InsightItem, CommentItem } from "@/lib/types";
-import { getInsightById, upvoteLocalInsight, addCommentToInsight, fetchRemoteInsights } from "@/lib/storage";
+import { getInsightById, toggleUpvoteLocalInsight, hasUserUpvoted, addCommentToInsight, fetchRemoteInsights, getSavedAuthorName } from "@/lib/storage";
 import { siteConfig } from "@/lib/config";
 import {
   ArrowLeft,
@@ -27,27 +27,31 @@ export default function InsightDetailPage() {
 
   const [insight, setInsight] = useState<InsightItem | null>(null);
   const [copied, setCopied] = useState(false);
-  const [upvotes, setUpvotes] = useState(1);
+  const [upvotes, setUpvotes] = useState(0);
   const [hasUpvoted, setHasUpvoted] = useState(false);
 
   // Comment form state
   const [commentAuthor, setCommentAuthor] = useState("");
   const [commentText, setCommentText] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [commentSuccess, setCommentSuccess] = useState(false);
 
   useEffect(() => {
     if (!id) return;
+    setHasUpvoted(hasUserUpvoted(id));
+    setCommentAuthor(getSavedAuthorName());
+
     const item = getInsightById(id);
     if (item) {
       setInsight(item);
-      setUpvotes(item.upvotes || 1);
+      setUpvotes(typeof item.upvotes === "number" ? item.upvotes : 0);
     }
     // Always sync latest upvotes/comments from remote Supabase
     fetchRemoteInsights().then((remote) => {
       const found = remote.find((r) => r.id === id);
       if (found) {
         setInsight(found);
-        setUpvotes(found.upvotes || 1);
+        setUpvotes(typeof found.upvotes === "number" ? found.upvotes : 0);
       }
     });
   }, [id]);
@@ -71,9 +75,10 @@ export default function InsightDetailPage() {
   }
 
   const handleUpvote = () => {
-    const newCount = upvoteLocalInsight(insight.id);
-    setUpvotes(newCount);
-    setHasUpvoted(true);
+    if (!insight) return;
+    const result = toggleUpvoteLocalInsight(insight.id);
+    setUpvotes(result.newCount);
+    setHasUpvoted(result.hasUpvoted);
   };
 
   const handleCopyLink = () => {
@@ -86,7 +91,7 @@ export default function InsightDetailPage() {
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentText.trim()) return;
+    if (!commentText.trim() || isSubmittingComment || !insight) return;
 
     setIsSubmittingComment(true);
     const updatedComments = addCommentToInsight(
@@ -98,6 +103,8 @@ export default function InsightDetailPage() {
     setInsight((prev) => (prev ? { ...prev, comments: updatedComments } : prev));
     setCommentText("");
     setIsSubmittingComment(false);
+    setCommentSuccess(true);
+    setTimeout(() => setCommentSuccess(false), 3000);
   };
 
   const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(
@@ -129,15 +136,15 @@ export default function InsightDetailPage() {
             {/* Reddit-style Upvote Button */}
             <button
               onClick={handleUpvote}
-              title="Upvote / Highlight this guide"
+              title={hasUpvoted ? "Remove upvote" : "Upvote this guide"}
               className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold border transition-all active:scale-95 ${
                 hasUpvoted
-                  ? "bg-amber-50 text-amber-700 border-amber-300"
+                  ? "bg-amber-50 text-amber-800 border-amber-300 shadow-sm"
                   : "bg-white text-slate-700 border-slate-200 hover:bg-amber-50 hover:text-amber-700"
               }`}
             >
               <ArrowBigUp className={`h-4 w-4 ${hasUpvoted ? "fill-amber-500 text-amber-600" : ""}`} />
-              <span>Upvote {upvotes}</span>
+              <span>{hasUpvoted ? "Upvoted" : "Upvote"} {upvotes}</span>
             </button>
 
             <button
@@ -278,14 +285,22 @@ export default function InsightDetailPage() {
               onChange={(e) => setCommentText(e.target.value)}
               className="w-full rounded-lg border border-slate-300 p-3 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white shadow-sm"
             />
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              {commentSuccess ? (
+                <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1.5 animate-fadeIn">
+                  <Check className="h-4 w-4 text-emerald-600" />
+                  <span>Comment posted successfully!</span>
+                </span>
+              ) : (
+                <span />
+              )}
               <button
                 type="submit"
                 disabled={isSubmittingComment}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"
               >
                 <Send className="h-3.5 w-3.5" />
-                <span>Post Comment</span>
+                <span>{isSubmittingComment ? "Posting..." : "Post Comment"}</span>
               </button>
             </div>
           </form>

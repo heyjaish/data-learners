@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { InsightItem } from "@/lib/types";
-import { upvoteLocalInsight } from "@/lib/storage";
+import { hasUserUpvoted, toggleUpvoteLocalInsight } from "@/lib/storage";
 import { ArrowRight, Clock, Building2, Briefcase, ExternalLink, ArrowBigUp, MessageSquare } from "lucide-react";
 
 interface InsightCardProps {
@@ -36,8 +36,13 @@ function getAvatarColor(name: string) {
 }
 
 export default function InsightCard({ insight }: InsightCardProps) {
-  const [upvotes, setUpvotes] = useState(insight.upvotes || 1);
+  const [upvotes, setUpvotes] = useState(typeof insight.upvotes === "number" ? insight.upvotes : 0);
   const [hasUpvoted, setHasUpvoted] = useState(false);
+
+  useEffect(() => {
+    setUpvotes(typeof insight.upvotes === "number" ? insight.upvotes : 0);
+    setHasUpvoted(hasUserUpvoted(insight.id));
+  }, [insight.id, insight.upvotes]);
 
   const badgeStyle = domainBadgeStyles[insight.domain] || "bg-slate-100 text-slate-700 border-slate-200";
   const avatarColor = getAvatarColor(insight.contributorName);
@@ -51,9 +56,9 @@ export default function InsightCard({ insight }: InsightCardProps) {
   const handleUpvote = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const newCount = upvoteLocalInsight(insight.id);
-    setUpvotes(newCount);
-    setHasUpvoted(true);
+    const result = toggleUpvoteLocalInsight(insight.id);
+    setUpvotes(result.newCount);
+    setHasUpvoted(result.hasUpvoted);
   };
 
   return (
@@ -122,8 +127,8 @@ export default function InsightCard({ insight }: InsightCardProps) {
           {/* Reddit-style Upvote Button */}
           <button
             onClick={handleUpvote}
-            title="Upvote / Highlight this guide"
-            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold border transition-all active:scale-90 ${
+            title={hasUpvoted ? "Remove upvote" : "Upvote this guide"}
+            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold border transition-all active:scale-95 ${
               hasUpvoted
                 ? "bg-amber-50 text-amber-700 border-amber-300"
                 : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200"

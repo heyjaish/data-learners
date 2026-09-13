@@ -41,7 +41,7 @@ export function toInsightItem(row: any): InsightItem {
     content: row.content || "",
     createdAt: row.created_at || row.createdAt || new Date().toISOString().split("T")[0],
     readTime: row.read_time || row.readTime || "3 min read",
-    upvotes: typeof row.upvotes === "number" ? row.upvotes : 1,
+    upvotes: typeof row.upvotes === "number" ? row.upvotes : 0,
     comments: Array.isArray(row.comments) ? row.comments : []
   };
 }
@@ -61,7 +61,7 @@ export function toDbRow(item: InsightItem): any {
     content: item.content,
     created_at: item.createdAt,
     read_time: item.readTime,
-    upvotes: item.upvotes || 1,
+    upvotes: typeof item.upvotes === "number" ? item.upvotes : 0,
     comments: item.comments || []
   };
 }
@@ -140,11 +140,17 @@ export function getLocalInsights(): InsightItem[] {
 
     const activeItems = items
       .filter((item) => !deletedIds.has(item.id))
-      .map((item) => ({
-        ...item,
-        upvotes: typeof item.upvotes === "number" ? item.upvotes : 1,
-        comments: Array.isArray(item.comments) ? item.comments : []
-      }));
+      .map((item) => {
+        // Clean out legacy mock comments if present in cache
+        const cleanedComments = (Array.isArray(item.comments) ? item.comments : []).filter(
+          (c) => c.id !== "c-1" && c.author !== "Pooja"
+        );
+        return {
+          ...item,
+          upvotes: typeof item.upvotes === "number" ? item.upvotes : 0,
+          comments: cleanedComments
+        };
+      });
 
     // Sort by upvotes (highest first)
     activeItems.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0));
@@ -162,7 +168,7 @@ export function getLocalInsights(): InsightItem[] {
 export function saveLocalInsight(newInsight: InsightItem): InsightItem[] {
   const cleanInsight: InsightItem = {
     ...newInsight,
-    upvotes: newInsight.upvotes || 1,
+    upvotes: typeof newInsight.upvotes === "number" ? newInsight.upvotes : 0,
     comments: newInsight.comments || []
   };
 
@@ -200,15 +206,49 @@ export function saveLocalInsight(newInsight: InsightItem): InsightItem[] {
   return [cleanInsight, ...initialInsights];
 }
 
-export function upvoteLocalInsight(id: string): number {
-  if (typeof window === "undefined") return 0;
+const UPVOTED_POSTS_KEY = "data_learners_upvoted_posts_v2";
+
+export function hasUserUpvoted(id: string): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const raw = localStorage.getItem(UPVOTED_POSTS_KEY);
+    const list: string[] = raw ? JSON.parse(raw) : [];
+    return list.includes(id);
+  } catch {
+    return false;
+  }
+}
+
+export function toggleUpvoteLocalInsight(id: string): { newCount: number; hasUpvoted: boolean } {
+  if (typeof window === "undefined") return { newCount: 0, hasUpvoted: false };
 
   try {
+    const raw = localStorage.getItem(UPVOTED_POSTS_KEY);
+    let list: string[] = raw ? JSON.parse(raw) : [];
+    const alreadyUpvoted = list.includes(id);
+
+    let delta = 0;
+    let nowUpvoted = false;
+
+    if (alreadyUpvoted) {
+      // Toggle off / Undo upvote (-1)
+      list = list.filter((itemId) => itemId !== id);
+      delta = -1;
+      nowUpvoted = false;
+    } else {
+      // Toggle on / Upvote (+1)
+      list.push(id);
+      delta = 1;
+      nowUpvoted = true;
+    }
+
+    localStorage.setItem(UPVOTED_POSTS_KEY, JSON.stringify(list));
+
     const current = getLocalInsights();
-    let newCount = 1;
+    let newCount = 0;
     const updated = current.map((item) => {
       if (item.id === id) {
-        newCount = (item.upvotes || 0) + 1;
+        newCount = Math.max(0, (item.upvotes || 0) + delta);
         return { ...item, upvotes: newCount };
       }
       return item;
@@ -229,30 +269,60 @@ export function upvoteLocalInsight(id: string): number {
       })();
     }
 
-    return newCount;
+    return { newCount, hasUpvoted: nowUpvoted };
   } catch (err) {
-    console.error("Failed to upvote:", err);
-    return 0;
+    console.error("Failed to toggle upvote:", err);
+    return { newCount: 0, hasUpvoted: false };
+  }
+}
+
+export function upvoteLocalInsight(id: string): number {
+  return toggleUpvoteLocalInsight(id).newCount;
+}
+
+export function getSavedAuthorName(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    return localStorage.getItem("data_learners_saved_author_name") || "";
+  } catch {
+    return "";
   }
 }
 
 export function addCommentToInsight(insightId: string, author: string, text: string): CommentItem[] {
   if (typeof window === "undefined") return [];
 
+  const cleanAuthor = author.trim() || "Aspiring Data Learner";
+  const cleanText = text.trim();
+  if (!cleanText) return [];
+
   try {
+    localStorage.setItem("data_learners_saved_author_name", cleanAuthor);
+
     const current = getLocalInsights();
+    const target = current.find((item) => item.id === insightId);
+    if (!target) return [];
+
+    const existingComments = Array.isArray(target.comments) ? target.comments : [];
+
+    // Duplicate check: Prevent submitting exact duplicate comments
+    const isDuplicate = existingComments.some(
+      (c) => c.author.toLowerCase() === cleanAuthor.toLowerCase() && c.text.toLowerCase() === cleanText.toLowerCase()
+    );
+    if (isDuplicate) {
+      return existingComments;
+    }
+
     const newComment: CommentItem = {
       id: "comment-" + Date.now().toString(),
-      author: author.trim() || "Aspiring Data Learner",
-      text: text.trim(),
+      author: cleanAuthor,
+      text: cleanText,
       createdAt: new Date().toISOString().split("T")[0]
     };
 
-    let updatedComments: CommentItem[] = [];
+    const updatedComments = [...existingComments, newComment];
     const updated = current.map((item) => {
       if (item.id === insightId) {
-        const existingComments = Array.isArray(item.comments) ? item.comments : [];
-        updatedComments = [...existingComments, newComment];
         return { ...item, comments: updatedComments };
       }
       return item;

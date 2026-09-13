@@ -36,14 +36,7 @@ If you can translate complex numbers into simple, actionable English, you will i
 - Focus on stakeholder empathy and understanding the business goals.`,
     createdAt: "2024-09-12",
     readTime: "6 min read",
-    upvotes: 18,
-    comments: [
-      {
-        id: "c-1",
-        author: "Pooja",
-        text: "Incredible perspective, Alan! Especially the emphasis on understanding business decisions rather than just memorizing SQL syntax.",
-        createdAt: "2024-09-12"
-      }
-    ]
+    upvotes: 0,
+    comments: []
   }
 ];
