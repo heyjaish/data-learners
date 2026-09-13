@@ -74,8 +74,11 @@ export default function SubmitInsightPage() {
       summary: derivedSummary,
       content: content.trim(),
       createdAt: new Date().toISOString().split("T")[0],
-      readTime: `${Math.max(2, Math.ceil(content.split(/\s+/).length / 180))} min read`
+      readTime: `${Math.max(2, Math.ceil(content.split(/\s+/).length / 180))} min read`,
+      upvotes: 1,
+      comments: []
     };
+
 
     saveLocalInsight(newInsight);
 

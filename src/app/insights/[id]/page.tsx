@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
-import { InsightItem } from "@/lib/types";
-import { getInsightById } from "@/lib/storage";
+import { InsightItem, CommentItem } from "@/lib/types";
+import { getInsightById, upvoteLocalInsight, addCommentToInsight } from "@/lib/storage";
 import { siteConfig } from "@/lib/config";
 import {
   ArrowLeft,
@@ -15,7 +15,10 @@ import {
   Share2,
   MessageSquare,
   ExternalLink,
-  Check
+  Check,
+  ArrowBigUp,
+  Send,
+  User
 } from "lucide-react";
 
 export default function InsightDetailPage() {
@@ -24,12 +27,20 @@ export default function InsightDetailPage() {
 
   const [insight, setInsight] = useState<InsightItem | null>(null);
   const [copied, setCopied] = useState(false);
+  const [upvotes, setUpvotes] = useState(1);
+  const [hasUpvoted, setHasUpvoted] = useState(false);
+
+  // Comment form state
+  const [commentAuthor, setCommentAuthor] = useState("");
+  const [commentText, setCommentText] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   useEffect(() => {
     if (!id) return;
     const item = getInsightById(id);
     if (item) {
       setInsight(item);
+      setUpvotes(item.upvotes || 1);
     } else {
       setInsight(null);
     }
@@ -53,12 +64,34 @@ export default function InsightDetailPage() {
     );
   }
 
+  const handleUpvote = () => {
+    const newCount = upvoteLocalInsight(insight.id);
+    setUpvotes(newCount);
+    setHasUpvoted(true);
+  };
+
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const handleCommentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+
+    setIsSubmittingComment(true);
+    const updatedComments = addCommentToInsight(
+      insight.id,
+      commentAuthor.trim() || "Community Learner",
+      commentText.trim()
+    );
+
+    setInsight((prev) => (prev ? { ...prev, comments: updatedComments } : prev));
+    setCommentText("");
+    setIsSubmittingComment(false);
   };
 
   const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(
@@ -76,7 +109,7 @@ export default function InsightDetailPage() {
     <div className="min-h-screen py-6 sm:py-12">
       <article className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
         
-        {/* Top Navigation & Share Link */}
+        {/* Top Navigation, Upvote & Share Bar */}
         <div className="flex items-center justify-between gap-3 text-xs border-b border-slate-200/80 pb-3 sm:pb-4">
           <Link
             href="/"
@@ -87,6 +120,20 @@ export default function InsightDetailPage() {
           </Link>
 
           <div className="flex items-center gap-2">
+            {/* Reddit-style Upvote Button */}
+            <button
+              onClick={handleUpvote}
+              title="Upvote / Highlight this guide"
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold border transition-all active:scale-95 ${
+                hasUpvoted
+                  ? "bg-amber-50 text-amber-700 border-amber-300"
+                  : "bg-white text-slate-700 border-slate-200 hover:bg-amber-50 hover:text-amber-700"
+              }`}
+            >
+              <ArrowBigUp className={`h-4 w-4 ${hasUpvoted ? "fill-amber-500 text-amber-600" : ""}`} />
+              <span>Upvote {upvotes}</span>
+            </button>
+
             <button
               onClick={handleCopyLink}
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-medium text-slate-700 hover:bg-slate-50 shadow-sm transition-colors"
@@ -139,6 +186,10 @@ export default function InsightDetailPage() {
                 <span className="flex items-center gap-1 text-slate-600">
                   <Building2 className="h-3 w-3 text-slate-400 shrink-0" />
                   {insight.company}
+                </span>
+                <span>•</span>
+                <span className="font-medium text-slate-500">
+                  {insight.experienceYears}
                 </span>
               </div>
             </div>
@@ -193,7 +244,72 @@ export default function InsightDetailPage() {
           </div>
         </div>
 
-        {/* Bottom Banner - Mobile friendly */}
+        {/* Community Comments Section at the Bottom */}
+        <section id="comments" className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 shadow-sm space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-blue-600" />
+              <span>Discussion & Comments ({insight.comments?.length || 0})</span>
+            </h3>
+          </div>
+
+          {/* Add Comment Form */}
+          <form onSubmit={handleCommentSubmit} className="space-y-3 bg-slate-50/70 p-4 rounded-xl border border-slate-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input
+                type="text"
+                placeholder="Your Name (Optional)"
+                value={commentAuthor}
+                onChange={(e) => setCommentAuthor(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white shadow-sm"
+              />
+            </div>
+            <textarea
+              required
+              rows={3}
+              placeholder="Ask a question or share your thoughts on this advice..."
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 p-3 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white shadow-sm"
+            />
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isSubmittingComment}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"
+              >
+                <Send className="h-3.5 w-3.5" />
+                <span>Post Comment</span>
+              </button>
+            </div>
+          </form>
+
+          {/* Comments List */}
+          {insight.comments && insight.comments.length > 0 ? (
+            <div className="space-y-3 pt-2">
+              {insight.comments.map((c) => (
+                <div key={c.id} className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                      <User className="h-3.5 w-3.5 text-slate-400" />
+                      {c.author}
+                    </span>
+                    <span className="text-[11px] text-slate-400">{c.createdAt}</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed pt-0.5">
+                    {c.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400 text-center py-4">
+              No comments yet. Be the first to share your thoughts!
+            </p>
+          )}
+        </section>
+
+        {/* Bottom WhatsApp Group Banner */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3.5 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
           <div>
             <h3 className="text-xs sm:text-sm font-bold text-slate-900">Have questions for our working professionals?</h3>

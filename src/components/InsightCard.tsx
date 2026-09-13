@@ -1,6 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { InsightItem } from "@/lib/types";
-import { ArrowRight, Clock, Building2, Briefcase, ExternalLink } from "lucide-react";
+import { upvoteLocalInsight } from "@/lib/storage";
+import { ArrowRight, Clock, Building2, Briefcase, ExternalLink, ArrowBigUp, MessageSquare } from "lucide-react";
 
 interface InsightCardProps {
   insight: InsightItem;
@@ -32,6 +36,9 @@ function getAvatarColor(name: string) {
 }
 
 export default function InsightCard({ insight }: InsightCardProps) {
+  const [upvotes, setUpvotes] = useState(insight.upvotes || 1);
+  const [hasUpvoted, setHasUpvoted] = useState(false);
+
   const badgeStyle = domainBadgeStyles[insight.domain] || "bg-slate-100 text-slate-700 border-slate-200";
   const avatarColor = getAvatarColor(insight.contributorName);
   const initials = insight.contributorName
@@ -40,6 +47,14 @@ export default function InsightCard({ insight }: InsightCardProps) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+
+  const handleUpvote = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const newCount = upvoteLocalInsight(insight.id);
+    setUpvotes(newCount);
+    setHasUpvoted(true);
+  };
 
   return (
     <article className="group flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-7 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-md hover:border-slate-300 transition-all duration-200">
@@ -101,11 +116,38 @@ export default function InsightCard({ insight }: InsightCardProps) {
         </div>
       </div>
 
-      {/* Footer / Read Advice Action */}
+      {/* Footer / Upvote & Read Advice Action */}
       <div className="mt-5 sm:mt-6 flex items-center justify-between border-t border-slate-100 pt-3.5 sm:pt-4 text-xs">
-        <div className="flex items-center gap-1 text-slate-400 font-medium text-[11px] sm:text-xs">
-          <Clock className="h-3.5 w-3.5 shrink-0" />
-          <span>{insight.readTime || "4 min read"}</span>
+        <div className="flex items-center gap-3">
+          {/* Reddit-style Upvote Button */}
+          <button
+            onClick={handleUpvote}
+            title="Upvote / Highlight this guide"
+            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold border transition-all active:scale-90 ${
+              hasUpvoted
+                ? "bg-amber-50 text-amber-700 border-amber-300"
+                : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200"
+            }`}
+          >
+            <ArrowBigUp className={`h-4 w-4 ${hasUpvoted ? "fill-amber-500 text-amber-600" : ""}`} />
+            <span>{upvotes}</span>
+          </button>
+
+          {/* Comments count */}
+          {insight.comments && insight.comments.length > 0 && (
+            <Link
+              href={`/insights/${insight.id}#comments`}
+              className="inline-flex items-center gap-1 text-slate-400 hover:text-slate-700 transition-colors text-[11px]"
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              <span>{insight.comments.length}</span>
+            </Link>
+          )}
+
+          <div className="hidden sm:flex items-center gap-1 text-slate-400 font-medium text-[11px]">
+            <Clock className="h-3 w-3 shrink-0" />
+            <span>{insight.readTime || "4 min read"}</span>
+          </div>
         </div>
 
         <Link

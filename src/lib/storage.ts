@@ -1,8 +1,8 @@
-import { InsightItem } from "./types";
+import { InsightItem, CommentItem } from "./types";
 import { initialInsights } from "./initialData";
 
-const STORAGE_KEY = "data_learners_community_insights_v2";
-const DELETED_KEY = "data_learners_deleted_ids_v2";
+const STORAGE_KEY = "data_learners_community_insights_v3";
+const DELETED_KEY = "data_learners_deleted_ids_v3";
 
 function getDeletedIds(): Set<string> {
   if (typeof window === "undefined") return new Set();
@@ -36,15 +36,31 @@ export function getLocalInsights(): InsightItem[] {
 
     let items: InsightItem[] = [];
     if (!saved) {
-      // First time loading: seed with initialInsights
       items = initialInsights;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } else {
       items = JSON.parse(saved);
+      // If initialInsights has new items not in localStorage, merge them in (unless deleted)
+      const existingIds = new Set(items.map((i) => i.id));
+      for (const init of initialInsights) {
+        if (!existingIds.has(init.id) && !deletedIds.has(init.id)) {
+          items.push(init);
+        }
+      }
     }
 
-    // STRICT: Filter out any items that have been deleted
-    const activeItems = items.filter((item) => !deletedIds.has(item.id));
+    // Filter out deleted items
+    const activeItems = items
+      .filter((item) => !deletedIds.has(item.id))
+      .map((item) => ({
+        ...item,
+        upvotes: typeof item.upvotes === "number" ? item.upvotes : 1,
+        comments: Array.isArray(item.comments) ? item.comments : []
+      }));
+
+    // Reddit style sorting: Sort by upvotes (highest first)
+    activeItems.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0));
+
     return activeItems;
   } catch (error) {
     console.error("Failed to read from localStorage:", error);
@@ -59,18 +75,21 @@ export function saveLocalInsight(newInsight: InsightItem): InsightItem[] {
 
   try {
     const current = getLocalInsights();
-    // Add new insight at the top, removing any duplicate
-    const updated = [newInsight, ...current.filter((item) => item.id !== newInsight.id)];
+    const cleanInsight: InsightItem = {
+      ...newInsight,
+      upvotes: newInsight.upvotes || 1,
+      comments: newInsight.comments || []
+    };
+
+    const updated = [cleanInsight, ...current.filter((item) => item.id !== cleanInsight.id)];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 
-    // Also remove from deletedIds if re-submitting with same id
     const deleted = getDeletedIds();
-    if (deleted.has(newInsight.id)) {
-      deleted.delete(newInsight.id);
+    if (deleted.has(cleanInsight.id)) {
+      deleted.delete(cleanInsight.id);
       localStorage.setItem(DELETED_KEY, JSON.stringify(Array.from(deleted)));
     }
 
-    // Notify other components
     window.dispatchEvent(new Event("data-learners-storage-updated"));
     return updated;
   } catch (error) {
@@ -79,19 +98,69 @@ export function saveLocalInsight(newInsight: InsightItem): InsightItem[] {
   }
 }
 
+export function upvoteLocalInsight(id: string): number {
+  if (typeof window === "undefined") return 0;
+
+  try {
+    const current = getLocalInsights();
+    let newCount = 1;
+    const updated = current.map((item) => {
+      if (item.id === id) {
+        newCount = (item.upvotes || 0) + 1;
+        return { ...item, upvotes: newCount };
+      }
+      return item;
+    });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    window.dispatchEvent(new Event("data-learners-storage-updated"));
+    return newCount;
+  } catch (err) {
+    console.error("Failed to upvote:", err);
+    return 0;
+  }
+}
+
+export function addCommentToInsight(insightId: string, author: string, text: string): CommentItem[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const current = getLocalInsights();
+    const newComment: CommentItem = {
+      id: "comment-" + Date.now().toString(),
+      author: author.trim() || "Aspiring Data Learner",
+      text: text.trim(),
+      createdAt: new Date().toISOString().split("T")[0]
+    };
+
+    let updatedComments: CommentItem[] = [];
+    const updated = current.map((item) => {
+      if (item.id === insightId) {
+        const existingComments = Array.isArray(item.comments) ? item.comments : [];
+        updatedComments = [...existingComments, newComment];
+        return { ...item, comments: updatedComments };
+      }
+      return item;
+    });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    window.dispatchEvent(new Event("data-learners-storage-updated"));
+    return updatedComments;
+  } catch (err) {
+    console.error("Failed to add comment:", err);
+    return [];
+  }
+}
+
 export function deleteLocalInsight(id: string): InsightItem[] {
   if (typeof window === "undefined") return [];
 
   try {
-    // 1. Permanently record this ID as deleted so it can NEVER resurrect
     recordDeletedId(id);
-
-    // 2. Remove it from active items list
     const current = getLocalInsights();
     const filtered = current.filter((item) => item.id !== id);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
 
-    // 3. Notify listeners
     window.dispatchEvent(new Event("data-learners-storage-updated"));
     return filtered;
   } catch (error) {

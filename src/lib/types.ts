@@ -6,6 +6,13 @@ export type Domain =
   | 'BI & Analytics'
   | 'Machine Learning';
 
+export interface CommentItem {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: string;
+}
+
 export interface InsightItem {
   id: string;
   contributorName: string;
@@ -19,6 +26,8 @@ export interface InsightItem {
   content: string; // The full ChatGPT-style detailed advice / blog text
   createdAt: string;
   readTime: string;
+  upvotes: number;
+  comments: CommentItem[];
 }
 
 export interface CommunityConfig {
