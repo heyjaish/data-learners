@@ -28,7 +28,7 @@ const config: Config = {
         }
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "Segoe UI", "system-ui", "sans-serif"],
+        sans: ["var(--font-geist-sans)", "Segoe UI", "-apple-system", "system-ui", "sans-serif"],
       },
     },
   },

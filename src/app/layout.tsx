@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -14,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className="min-h-screen flex flex-col bg-[#fafafa] text-slate-900 font-sans antialiased selection:bg-blue-100 selection:text-blue-900">
+    <html lang="en" className={`${GeistSans.variable} scroll-smooth`}>
+      <body className={`${GeistSans.className} min-h-screen flex flex-col bg-[#fafafa] text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900`}>
         <Navbar />
         <main className="flex-1">
           {children}
