@@ -50,13 +50,13 @@ export default function SubmitInsightPage() {
       let derivedTitle = title.trim();
       if (!derivedTitle) {
         const firstLine = content.trim().split("\n")[0].replace(/^[*#\d.\s]+/, "").trim();
-        derivedTitle = firstLine.length > 5 && firstLine.length < 90
-          ? firstLine
+        derivedTitle = firstLine.length > 3
+          ? (firstLine.length > 150 ? firstLine.slice(0, 150) + "..." : firstLine)
           : `Career Advice & Guidance for ${domain}`;
       }
 
-      // Auto-derive clean summary if not provided
-      const derivedSummary = summary.trim() || (content.trim().slice(0, 150).replace(/[*#]/g, "") + "...");
+      // Clean summary (no artificial 150-char slice if not provided)
+      const derivedSummary = summary.trim();
 
       const slug = (contributorName + "-" + domain)
         .toLowerCase()
@@ -265,23 +265,31 @@ export default function SubmitInsightPage() {
             </div>
           </div>
 
-          {/* Full Long-Form Advice (Mandatory) */}
+          {/* Full Long-Form Advice (Mandatory - No Limit) */}
           <div className="space-y-2 pt-1">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
                 <FileText className="h-4 w-4 text-blue-600" />
-                Full Written Advice / Suggestions <span className="text-rose-500">*</span>
+                <span>Full Written Advice / Suggestions <span className="text-rose-500">*</span></span>
               </label>
-              <span className="text-[11px] text-slate-400">Supports **bold**, bullet points, numbered lists</span>
+              <span className="text-[11px] text-emerald-600 font-medium">
+                No word limit — paste complete, detailed guides
+              </span>
             </div>
             <textarea
               required
-              rows={11}
-              placeholder={`Paste the advice or suggestions here.\n\nTips:\n- Use **double stars** for **bold headings**\n- Use numbers (1., 2.) or hyphens (-) for lists`}
+              rows={16}
+              placeholder={`Paste the advice or suggestions here without any length limit.\n\nTips:\n- Use **double stars** for **bold headings**\n- Use numbers (1., 2.) or hyphens (-) for lists\n- Paste complete responses from LinkedIn or WhatsApp`}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 p-3.5 sm:p-4 text-base sm:text-sm text-slate-900 leading-relaxed placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm font-sans"
+              className="w-full min-h-[360px] resize-y rounded-xl border border-slate-300 p-3.5 sm:p-4 text-base sm:text-sm text-slate-900 leading-relaxed placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm font-sans"
             />
+            <div className="flex items-center justify-between text-xs pt-0.5">
+              <span className="text-[11px] text-slate-400">Supports **bold**, bullet points, numbered lists</span>
+              <span className="font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-full text-[11px]">
+                {content.trim() ? `${content.trim().split(/\s+/).length} words • ${content.length} characters` : "0 words"} • Unlimited
+              </span>
+            </div>
           </div>
 
           {/* Submit Action */}

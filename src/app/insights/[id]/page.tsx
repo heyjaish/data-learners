@@ -227,8 +227,8 @@ export default function InsightDetailPage() {
           </div>
         </div>
 
-        {/* Quick Summary Callout */}
-        {insight.summary && (
+        {/* Quick Summary Callout - Only if user provided distinct summary */}
+        {insight.summary && !insight.content.trim().startsWith(insight.summary.replace(/\.\.\.$/, "").trim()) && (
           <div className="rounded-xl border-l-4 border-blue-600 bg-blue-50/50 p-3.5 sm:p-4 text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
             <ReactMarkdown
               components={{
