@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
 import { InsightItem } from "@/lib/types";
 import { getInsightById } from "@/lib/storage";
 import { siteConfig } from "@/lib/config";
@@ -169,10 +170,26 @@ export default function InsightDetailPage() {
           </div>
         )}
 
-        {/* Full Long-Form Content (ChatGPT / Article Style) */}
+        {/* Full Long-Form Content with Markdown & Bold parsing */}
         <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-9 shadow-sm">
-          <div className="text-slate-800 text-sm sm:text-base leading-relaxed whitespace-pre-line space-y-4 font-normal">
-            {insight.content}
+          <div className="text-slate-800 text-sm sm:text-base leading-relaxed font-normal">
+            <ReactMarkdown
+              components={{
+                h1: ({ node, ...props }) => <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mt-6 mb-3" {...props} />,
+                h2: ({ node, ...props }) => <h2 className="text-lg sm:text-xl font-bold text-slate-900 mt-5 mb-2.5" {...props} />,
+                h3: ({ node, ...props }) => <h3 className="text-base sm:text-lg font-bold text-slate-900 mt-4 mb-2" {...props} />,
+                p: ({ node, ...props }) => <p className="mb-4 text-slate-800 leading-relaxed" {...props} />,
+                strong: ({ node, ...props }) => <strong className="font-bold text-slate-900" {...props} />,
+                em: ({ node, ...props }) => <em className="italic text-slate-800" {...props} />,
+                ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-4 space-y-1.5" {...props} />,
+                ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-4 space-y-1.5" {...props} />,
+                li: ({ node, ...props }) => <li className="text-slate-800 leading-relaxed" {...props} />,
+                blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-blue-500 pl-4 italic text-slate-600 my-4" {...props} />,
+                code: ({ node, ...props }) => <code className="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded font-mono text-xs" {...props} />,
+              }}
+            >
+              {insight.content}
+            </ReactMarkdown>
           </div>
         </div>
 

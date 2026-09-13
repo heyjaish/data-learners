@@ -17,7 +17,7 @@ import {
 export default function SubmitInsightPage() {
   const router = useRouter();
 
-  // Form State
+  // Form State - only Name and Content are mandatory
   const [contributorName, setContributorName] = useState("");
   const [contributorRole, setContributorRole] = useState("");
   const [company, setCompany] = useState("");
@@ -34,12 +34,28 @@ export default function SubmitInsightPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!contributorName.trim() || !title.trim() || !content.trim()) {
-      alert("Please fill in Contributor Name, Title, and the Advice content.");
+    if (!contributorName.trim()) {
+      alert("Please enter the Contributor's Name.");
+      return;
+    }
+    if (!content.trim()) {
+      alert("Please paste or write the Advice content.");
       return;
     }
 
     setIsSubmitting(true);
+
+    // Auto-derive clean title if not provided
+    let derivedTitle = title.trim();
+    if (!derivedTitle) {
+      const firstLine = content.trim().split("\n")[0].replace(/^[*#\d.\s]+/, "").trim();
+      derivedTitle = firstLine.length > 5 && firstLine.length < 90
+        ? firstLine
+        : `Career Advice & Guidance for ${domain}`;
+    }
+
+    // Auto-derive clean summary if not provided
+    const derivedSummary = summary.trim() || (content.trim().slice(0, 150).replace(/[*#]/g, "") + "...");
 
     const slug = (contributorName + "-" + domain)
       .toLowerCase()
@@ -49,13 +65,13 @@ export default function SubmitInsightPage() {
     const newInsight: InsightItem = {
       id: slug,
       contributorName: contributorName.trim(),
-      contributorRole: contributorRole.trim() || "Working Professional",
+      contributorRole: contributorRole.trim() || `${domain} Professional`,
       company: company.trim() || "Tech Industry",
-      experienceYears: experienceYears.trim() || "3+ Years",
+      experienceYears: experienceYears.trim() || "Experienced",
       linkedinUrl: linkedinUrl.trim() || undefined,
       domain: domain,
-      title: title.trim(),
-      summary: summary.trim() || content.trim().slice(0, 150) + "...",
+      title: derivedTitle,
+      summary: derivedSummary,
       content: content.trim(),
       createdAt: new Date().toISOString().split("T")[0],
       readTime: `${Math.max(2, Math.ceil(content.split(/\s+/).length / 180))} min read`
@@ -94,7 +110,7 @@ export default function SubmitInsightPage() {
             Post Contributor Advice
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed">
-            Paste the suggestions or message received from a working professional. It will be immediately published to the community grid.
+            Paste the suggestions or message received from a working professional. It will immediately appear on the community grid.
           </p>
         </div>
 
@@ -120,6 +136,7 @@ export default function SubmitInsightPage() {
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              {/* Only Name has mandatory red star */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Full Name <span className="text-rose-500">*</span>
@@ -136,11 +153,10 @@ export default function SubmitInsightPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Current Role / Title <span className="text-rose-500">*</span>
+                  Current Role / Title <span className="text-slate-400 font-normal">(Optional)</span>
                 </label>
                 <input
                   type="text"
-                  required
                   placeholder="e.g. Senior Data Analyst"
                   value={contributorRole}
                   onChange={(e) => setContributorRole(e.target.value)}
@@ -150,7 +166,7 @@ export default function SubmitInsightPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Company / Organization
+                  Company / Organization <span className="text-slate-400 font-normal">(Optional)</span>
                 </label>
                 <input
                   type="text"
@@ -163,7 +179,7 @@ export default function SubmitInsightPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Experience
+                  Experience <span className="text-slate-400 font-normal">(Optional)</span>
                 </label>
                 <input
                   type="text"
@@ -176,7 +192,7 @@ export default function SubmitInsightPage() {
 
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  LinkedIn Profile (Optional)
+                  LinkedIn Profile <span className="text-slate-400 font-normal">(Optional)</span>
                 </label>
                 <input
                   type="url"
@@ -189,10 +205,10 @@ export default function SubmitInsightPage() {
             </div>
           </div>
 
-          {/* Domain Track */}
+          {/* Domain Track - clean selector without asterisk */}
           <div className="space-y-2 sm:space-y-3 pt-1">
             <label className="block text-xs font-semibold text-slate-700">
-              Domain Track <span className="text-rose-500">*</span>
+              Domain Track
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {(["Data Analyst", "Data Scientist", "Data Engineer", "BI & Analytics"] as const).map((d) => (
@@ -212,15 +228,14 @@ export default function SubmitInsightPage() {
             </div>
           </div>
 
-          {/* Title & Short Preview */}
+          {/* Title & Short Preview - Both completely optional */}
           <div className="space-y-3 sm:space-y-4 pt-1">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Advice Headline / Title <span className="text-rose-500">*</span>
+                Advice Headline / Title <span className="text-slate-400 font-normal">(Optional - auto-generated if left blank)</span>
               </label>
               <input
                 type="text"
-                required
                 placeholder="e.g. Practical Roadmap for Data Analytics Freshers in 2024"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -230,7 +245,7 @@ export default function SubmitInsightPage() {
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Short Preview (1-2 sentences for the card)
+                Short Preview <span className="text-slate-400 font-normal">(Optional - auto-extracted from content if left blank)</span>
               </label>
               <input
                 type="text"
@@ -242,19 +257,19 @@ export default function SubmitInsightPage() {
             </div>
           </div>
 
-          {/* Full Long-Form Advice (ChatGPT-style text) */}
+          {/* Full Long-Form Advice (Mandatory) */}
           <div className="space-y-2 pt-1">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
                 <FileText className="h-4 w-4 text-blue-600" />
                 Full Written Advice / Suggestions <span className="text-rose-500">*</span>
               </label>
-              <span className="text-[11px] text-slate-400 hidden sm:inline">Paste long message / ChatGPT output directly</span>
+              <span className="text-[11px] text-slate-400">Supports **bold**, bullet points, numbered lists</span>
             </div>
             <textarea
               required
-              rows={10}
-              placeholder="Paste the full suggestions, roadmaps, tips, and insights here. Paragraphs and formatting will be preserved cleanly..."
+              rows={11}
+              placeholder={`Paste the advice or suggestions here.\n\nTips:\n- Use **double stars** for **bold headings**\n- Use numbers (1., 2.) or hyphens (-) for lists`}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="w-full rounded-xl border border-slate-300 p-3.5 sm:p-4 text-base sm:text-sm text-slate-900 leading-relaxed placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm font-sans"
