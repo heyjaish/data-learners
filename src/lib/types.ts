@@ -13,19 +13,12 @@ export interface InsightItem {
   company: string;
   experienceYears: string;
   linkedinUrl?: string;
-  githubUrl?: string;
-  avatarUrl?: string;
   domain: Exclude<Domain, 'All'>;
   title: string;
   summary: string;
-  theDos: string[];
-  theDonts: string[];
-  recommendedTools: { name: string; level: 'Essential' | 'Good to Have' | 'Optional'; note: string }[];
-  interviewAdvice: string;
-  fullStory: string;
+  content: string; // The full ChatGPT-style detailed advice / blog text
   createdAt: string;
   readTime: string;
-  isFeatured?: boolean;
 }
 
 export interface CommunityConfig {

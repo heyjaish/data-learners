@@ -9,39 +9,25 @@ export const initialInsights: InsightItem[] = [
     experienceYears: "4.5 Years",
     linkedinUrl: "https://linkedin.com/in/",
     domain: "Data Analyst",
-    title: "From Non-CS to Senior Data Analyst: The exact strategy that got me hired",
-    summary: "Stop building titanic and iris dataset projects. Real recruiters want to see business metrics, data cleaning resilience, and storytelling with SQL & PowerBI.",
-    isFeatured: true,
-    theDos: [
-      "Master Advanced SQL first: Window functions (RANK, DENSE_RANK, ROW_NUMBER), CTEs, self-joins, and query optimization.",
-      "Understand business KPIs: Learn what Churn, CAC, LTV, Retention Rate, and Gross Margin mean before jumping into charts.",
-      "Build end-to-end portfolio projects with messy real-world datasets (e.g., e-commerce clickstream or supply chain delays).",
-      "Document your thought process: Write an executive summary answering 'What problem did this solve?' and 'What business decision resulted from this?'",
-      "Get comfortable with Excel/Google Sheets: Pivot tables, VLOOKUP/XLOOKUP, and rapid ad-hoc summaries are still 30% of daily industry work."
-    ],
-    theDonts: [
-      "Do NOT put generic Kaggle dataset projects (Titanic survival, Boston Housing) on your resume; recruiters skip them immediately.",
-      "Do NOT spend 6 months learning Python machine learning if your goal is an entry-level Data Analyst job.",
-      "Do NOT make cluttered dashboards with 20 charts on one page; simplicity and clear takeaways always win.",
-      "Do NOT apply for jobs with just a 1-page resume without a clickable portfolio (GitHub, Tableau Public, or NovyPro).",
-      "Never memorize SQL syntax without understanding execution order (FROM -> WHERE -> GROUP BY -> HAVING -> SELECT -> ORDER BY)."
-    ],
-    recommendedTools: [
-      { name: "SQL (PostgreSQL / Snowflake / BigQuery)", level: "Essential", note: "The non-negotiable bread & butter. 70% of interviews test SQL live." },
-      { name: "PowerBI or Tableau", level: "Essential", note: "Pick one and master DAX / calculated fields and data modeling (star schema)." },
-      { name: "Excel / Google Sheets", level: "Essential", note: "Crucial for quick stakeholder discussions and ad-hoc validation." },
-      { name: "Python (Pandas, Numpy)", level: "Good to Have", note: "Great for data cleaning and automation, but secondary to SQL for pure analyst roles." }
-    ],
-    interviewAdvice: "In live interviews, 90% of candidates fail not because of SQL syntax, but because they jump straight to writing code without clarifying edge cases. Always ask: 'Are there NULL values?', 'Is the user_id unique in both tables?', and 'What is the date format?' Speak your thought process out loud.",
-    fullStory: `When I started preparing for a Data Analyst role from a mechanical engineering background, I was completely overwhelmed. Every YouTube video suggested learning 15 different tools: Python, R, Tableau, PowerBI, Hadoop, Spark, Machine Learning, and AWS.
+    title: "Realistic Advice for Freshers Entering Data Analytics in 2024",
+    summary: "Stop building generic Titanic and Iris dataset projects. Recruiters want to see how you clean messy data, calculate business KPIs, and communicate with SQL & PowerBI.",
+    content: `When I transitioned into Data Analytics from a mechanical background, I wasted almost six months following bad YouTube advice that told me to learn Python, Machine Learning, Deep Learning, Tableau, PowerBI, Big Data, and Cloud all at once.
 
-Here is the honest truth from someone who conducts interviews now:
-For an entry-level Data Analyst, we evaluate 3 core pillars:
-1. **Can you query messy databases reliably?** (SQL proficiency)
-2. **Can you present numbers in a way a business manager can act upon?** (BI & Storytelling)
-3. **Can you think critically about metrics?** (Business acumen)
+Here is the honest reality of what we actually look for when interviewing entry-level analysts:
 
-If you spend 6 weeks deeply mastering SQL (writing complex joins, aggregations, window queries), 3 weeks building 2 solid PowerBI dashboards with proper Star Schema data modeling, and document your projects on LinkedIn with short 1-minute video walkthroughs, you will get interview calls 10x faster than someone who just lists 20 tools on a resume.`,
+1. Advanced SQL is 70% of the game:
+You don't need to know every database trick, but you must be rock-solid with CTEs (Common Table Expressions), Window Functions (ROW_NUMBER, DENSE_RANK, LEAD/LAG), self joins, and grouping. If an interviewer asks you to calculate 7-day rolling revenue or identify duplicate transactions, you shouldn't hesitate.
+
+2. Learn Business Metrics, not just Chart Types:
+A dashboard full of colorful pie charts and gauge meters is useless if it doesn't answer a business question. Understand what Customer Acquisition Cost (CAC), Lifetime Value (LTV), Churn Rate, and MoM Growth actually mean. When explaining a project in an interview, never say 'I made a bar chart'. Say 'I built an alerting view that identified accounts with a 40% drop in weekly activity.'
+
+3. Portfolio Projects with Messy Data:
+Kaggle's cleaned CSVs do not impress anyone anymore. Instead, take an uncleaned dataset from government data portals, open APIs, or scrapers. Show how you handled NULL values, bad date formats, currency mismatches, and duplicate records. Write a clean README explaining what problem your analysis solved.
+
+4. Excel is Still King in Every Meeting:
+Don't look down on Excel. VLOOKUP/XLOOKUP, Pivot Tables, and quick ad-hoc analysis are still what business stakeholders use 30% of the day.
+
+Stay focused on SQL + 1 BI tool (PowerBI or Tableau) + Excel. Master these three deeply before worrying about complex Python machine learning models.`,
     createdAt: "2024-09-01",
     readTime: "4 min read"
   },
@@ -53,41 +39,25 @@ If you spend 6 weeks deeply mastering SQL (writing complex joins, aggregations, 
     experienceYears: "6 Years",
     linkedinUrl: "https://linkedin.com/in/",
     domain: "Data Scientist",
-    title: "Why 80% of aspiring Data Scientists struggle to crack their first role",
-    summary: "Machine learning algorithms are just 10% of a Data Scientist's job. Problem formulation, data quality verification, and experiment design (A/B testing) make the other 90%.",
-    isFeatured: true,
-    theDos: [
-      "Develop rock-solid fundamentals in Applied Statistics: Hypothesis testing, p-values, Central Limit Theorem, confidence intervals, and bias-variance tradeoff.",
-      "Learn how to formulate a fuzzy business problem into a measurable machine learning objective.",
-      "Understand feature engineering and data leakage deeply; models fail in production because of subtle data leaks.",
-      "Write clean, modular, and readable Python code with functions, type hints, and version control (Git).",
-      "Learn model evaluation beyond just Accuracy: Precision, Recall, F1-Score, ROC-AUC, and cost-matrix evaluation."
-    ],
-    theDonts: [
-      "Do NOT treat scikit-learn models like magic black boxes without knowing how loss functions and gradient descent work.",
-      "Do NOT jump directly into Deep Learning and Generative AI before mastering classical algorithms (Logistic Regression, Random Forests, XGBoost).",
-      "Do NOT ignore SQL; even senior data scientists spend hours extracting and prepping raw warehouse tables.",
-      "Never present model accuracy alone without showing confusion matrices or class distribution imbalances.",
-      "Do NOT submit Jupyter notebooks with 50 unorganized cells and no markdown explanation as your portfolio."
-    ],
-    recommendedTools: [
-      { name: "Python (Pandas, Scikit-Learn, Statsmodels)", level: "Essential", note: "The primary environment for experiments and modeling." },
-      { name: "SQL", level: "Essential", note: "Extracting training sets from large data warehouses." },
-      { name: "Git & GitHub", level: "Essential", note: "Collaborative code versioning and reproducible research." },
-      { name: "XGBoost / LightGBM", level: "Good to Have", note: "The gold standard for tabular business data." },
-      { name: "Docker / FastAPI", level: "Good to Have", note: "Deploying your model as an inference microservice." }
-    ],
-    interviewAdvice: "Expect machine learning system design questions. An interviewer might ask: 'How would you build a fraud detection system for a payment app?' Start by asking about transaction volume, latency requirements, false positive tolerance, and feature availability before naming any algorithm.",
-    fullStory: `Many freshers message me saying: 'I have completed 5 courses on Deep Learning and LLMs, but I am not getting interview calls.'
+    title: "Why Most Aspiring Data Scientists Struggle to Crack Their First Role",
+    summary: "Algorithms are only 15% of a Data Scientist's day. Problem formulation, data quality, and business experimentation (A/B testing) make up the other 85%.",
+    content: `I regularly review resumes and conduct interviews for Junior Data Scientist candidates, and the biggest gap I see is that people treat Machine Learning as a set of magical Python functions rather than mathematical intuition and business problem-solving.
 
-The industry reality: 90% of business problems in companies are solved with well-engineered features and tree-based algorithms like XGBoost or Logistic Regression, combined with rigorous A/B testing.
+Here are a few key insights I always share with freshers:
 
-When hiring freshers or junior data scientists, we test:
-- Can you explain why you chose a specific metric? (e.g., why Recall is critical in fraud/medical diagnostics instead of Accuracy).
-- Can you write clean Python code that does not crash on unseen missing values?
-- Can you explain how your model actually produces its output to a non-technical stakeholder?
+1. Stop relying only on 'model.fit()' and 'model.predict()':
+Anyone can copy three lines of scikit-learn code. What separates a hired candidate from a rejected one is knowing: Why did you choose this loss function? How did you handle data leakage between train and test sets? Why is Recall more important than Accuracy for this specific use case?
 
-Focus on deep mathematical intuition of simple models rather than shallow knowledge of 50 complex neural networks.`,
+2. Statistics & Experimentation (A/B Testing):
+In real companies, business stakeholders want to know whether a product change made a statistically significant impact. Learn hypothesis testing, p-values, sample size estimation, and confidence intervals. A candidate who understands A/B testing will always stand out over someone who only knows neural networks.
+
+3. Feature Engineering Wins Over Complex Models:
+A simple Logistic Regression or Random Forest model with well-engineered, domain-relevant features almost always outperforms a fancy neural network trained on noisy, poorly cleaned data. Spend time learning how to engineer signals from timestamps, text lengths, categorical ratios, and interaction terms.
+
+4. Write Modular, Production-Grade Python:
+Ditch the 80-cell messy Jupyter notebook with variables named 'df1', 'df2', and 'temp'. Learn to write Python with clean functions, type hints, docstrings, and Git version control.
+
+Focus on statistical fundamentals, solid SQL, and practical ML on tabular data.`,
     createdAt: "2024-09-05",
     readTime: "5 min read"
   },
@@ -99,42 +69,27 @@ Focus on deep mathematical intuition of simple models rather than shallow knowle
     experienceYears: "7+ Years",
     linkedinUrl: "https://linkedin.com/in/",
     domain: "Data Engineer",
-    title: "The Data Engineering Roadmap: What actually matters in production",
-    summary: "Data Engineering is not just about Spark and Kafka. It is software engineering applied to data pipelines: idempotency, data quality tests, orchestration, and schema management.",
-    isFeatured: true,
-    theDos: [
-      "Build strong software engineering habits: OOP in Python or Java/Scala, unit testing (pytest), Git, and CI/CD pipelines.",
-      "Understand Data Modeling: dimensional modeling (Kimball methodology), Fact vs Dimension tables, slowly changing dimensions (SCD Type 1 & 2).",
-      "Ensure pipeline idempotency: if a pipeline runs twice for the same date, it must not duplicate rows or corrupt data.",
-      "Learn an orchestrator like Apache Airflow or Prefect to manage DAG dependencies, retries, and alert alerting.",
-      "Implement data quality tests at every step (using Great Expectations or dbt tests) before data reaches analysts."
-    ],
-    theDonts: [
-      "Do NOT start learning 10 big data tools simultaneously (Hadoop, Kafka, Spark, Flink, Cassandra); master one solid stack first.",
-      "Never hardcode credentials or database connections in pipeline scripts; always use environment variables and secrets managers.",
-      "Do NOT ignore Linux and Docker; modern data pipelines run in containers in cloud environments.",
-      "Avoid writing giant, monolithic SQL scripts that nobody can debug when a failure happens at 2 AM.",
-      "Do NOT underestimate cloud fundamentals (IAM roles, S3/GCS storage tiers, network security)."
-    ],
-    recommendedTools: [
-      { name: "Python / PySpark", level: "Essential", note: "The industry standard for data transformations and pipeline scripts." },
-      { name: "SQL & Data Warehouses (Snowflake/BigQuery/Redshift)", level: "Essential", note: "Understanding partition pruning, clustering, and cost optimization." },
-      { name: "dbt (data build tool)", level: "Essential", note: "The standard for modular in-warehouse transformation and testing." },
-      { name: "Apache Airflow", level: "Good to Have", note: "Industry leading workflow orchestrator." },
-      { name: "Docker", level: "Good to Have", note: "Containerizing pipelines for reliable cloud execution." }
-    ],
-    interviewAdvice: "Be ready for data pipeline architecture questions. Interviewers love to ask: 'Our hourly batch pipeline is taking 3 hours to finish. How do you identify bottlenecks and optimize it?' Discuss partitioning, indexing, query execution plans, parallel processing, and caching.",
-    fullStory: `Data Engineering is one of the highest paying and fastest growing domains in tech right now, but beginner materials are often cluttered with legacy technologies.
+    title: "Data Engineering in Practice: What Truly Matters in Production",
+    summary: "Data Engineering is software engineering applied to data pipelines: idempotency, data modeling, testing, orchestration, and cost optimization.",
+    content: `A common myth among freshers is that Data Engineering requires mastering 15 different distributed computing systems like Hadoop, Kafka, Flink, Spark, Cassandra, and Kubernetes right out of college.
 
-If you are starting today, forget Hadoop MapReduce. Focus on modern cloud-native data architecture:
-1. **Ingestion**: How data lands into object storage (S3/GCS/Azure Blob).
-2. **Transformation**: Using dbt and SQL or PySpark to clean, deduplicate, and model data into clean dimensional schemas.
-3. **Orchestration**: Running Airflow DAGs that notify Slack/Teams if a job fails.
-4. **Data Quality**: Making sure corrupt records are quarantined instead of contaminating dashboards.
+The reality is that companies want engineers who understand software engineering fundamentals applied to data:
 
-Build one portfolio project where you extract an API (e.g. OpenWeather or GitHub public events), ingest it into DuckDB or PostgreSQL, run dbt transformations, and schedule it with GitHub Actions or Airflow. That alone puts you ahead of 90% of applicants.`,
+1. Idempotency & Data Reliability:
+If your daily pipeline fails midway and runs again, does it duplicate rows or produce corrupt totals? Designing pipelines that can safely rerun without manual intervention (idempotent pipelines) is the single most important skill.
+
+2. Dimensional Data Modeling:
+Don't skip Kimball methodology. Learn Fact tables, Dimension tables, surrogate keys, and Slowly Changing Dimensions (SCD Type 1 and 2). Understanding how data should be organized in Snowflake, BigQuery, or Redshift so analysts can query it cheaply is vital.
+
+3. The Modern Data Stack:
+Today, dbt (data build tool) and SQL have taken over a huge chunk of traditional ETL work. A fresher who knows how to write clean, modular dbt models with data tests and documentation has an immediate advantage.
+
+4. Python & Workflow Orchestration:
+Learn basic object-oriented Python, error handling, logging, and an orchestrator like Apache Airflow or Prefect to manage DAG schedules and dependency alerts.
+
+Build one clean pipeline where you pull data from a free public API, load it into PostgreSQL or DuckDB, transform it with dbt, and schedule it with GitHub Actions. Put that on your resume and you'll get noticed.`,
     createdAt: "2024-09-08",
-    readTime: "6 min read"
+    readTime: "5 min read"
   },
   {
     id: "priya-nair-bi-engineer",
@@ -144,35 +99,25 @@ Build one portfolio project where you extract an API (e.g. OpenWeather or GitHub
     experienceYears: "5 Years",
     linkedinUrl: "https://linkedin.com/in/",
     domain: "BI & Analytics",
-    title: "Mastering Data Storytelling: How to make dashboards executives actually use",
-    summary: "Most dashboards fail because they show raw data instead of actionable insights. Learn how to design user-centric BI tools with Star Schema and DAX.",
-    isFeatured: false,
-    theDos: [
-      "Always design with the 5-second rule: Can an executive glance at your dashboard and tell if the business is winning or losing in 5 seconds?",
-      "Master Star Schema modeling in PowerBI: Never build reports directly on one giant flat Excel table.",
-      "Use consistent color palettes: Reserve alert colors (red/green) strictly for positive/negative KPI indicators.",
-      "Interview business stakeholders before building: Understand what business decisions they need to make every Monday morning.",
-      "Add context to numbers: A revenue of $500K means nothing unless compared to Target ($600K) or Previous Month ($450K)."
-    ],
-    theDonts: [
-      "Do NOT use pie charts with more than 3 slices or 3D charts under any circumstances.",
-      "Avoid using 10 different colors on one report page; choose 1 primary theme and 1 accent color.",
-      "Never deliver a dashboard without testing performance on large datasets; slow load times kill adoption.",
-      "Do NOT assume business users understand technical jargon like standard deviations or quantile bands.",
-      "Avoid burying key metrics at the bottom of the page; follow the F-pattern reading flow."
-    ],
-    recommendedTools: [
-      { name: "Power BI & DAX", level: "Essential", note: "Master CALCULATE, FILTER, time-intelligence, and relationship management." },
-      { name: "SQL", level: "Essential", note: "Writing performant views and data aggregation queries." },
-      { name: "Figma / UI Mockups", level: "Good to Have", note: "Wireframing dashboard layout before writing any code." },
-      { name: "Tableau", level: "Good to Have", note: "Great alternative in enterprise ecosystems." }
-    ],
-    interviewAdvice: "When presenting a portfolio dashboard in an interview, do not explain what chart types you chose. Explain the business problem: 'The sales team was losing track of churned accounts, so I created this alerting view which highlights accounts inactive for >60 days.'",
-    fullStory: `Early in my career, I built what I thought was an incredible dashboard with 12 complex charts, drill-throughs, and animated visuals. When the VP of Sales opened it, he looked confused, closed it, and asked me for an Excel sheet instead.
+    title: "How to Build Dashboards That Business Stakeholders Actually Use",
+    summary: "Most BI dashboards get abandoned after two weeks because they show charts without context. Learn user-centric dashboard design, star schema modeling, and DAX.",
+    content: `Early in my career, I built what I thought was an incredible dashboard with 12 complex charts, drill-throughs, and animated visuals. When the VP of Sales opened it, he looked confused, closed it, and asked me for an Excel sheet instead.
 
-That was my biggest learning: Dashboards are not art exhibits; they are decision-making tools.
+That taught me the most important lesson in Business Intelligence: Dashboards are not art exhibits; they are decision-making tools.
 
-A great Business Intelligence professional is 50% technical and 50% product designer. When you understand the metrics that drive revenue and costs for a company, you become an indispensable partner to leadership.`,
+1. The 5-Second Rule:
+An executive should be able to look at your report header and immediately know whether the business is hitting its targets or in trouble. Keep your primary KPIs at the top-left with clear indicators (e.g. Revenue: $4.2M (+8% vs target)).
+
+2. Master Star Schema Modeling:
+Never build PowerBI reports on top of one giant flat table. Always model your data into dimension tables (Date, Customer, Product) and fact tables (Sales, Orders). This ensures fast filter performance and clean DAX calculations.
+
+3. Restrict Your Color Palette:
+Never use 10 different colors on a single page. Use a neutral palette (white, light slate, charcoal text) and reserve alert colors (green/red) strictly for positive and negative performance indicators.
+
+4. Always Interview Stakeholders First:
+Before opening PowerBI or Tableau, talk to the manager who will use it: What is the first question you need answered on Monday morning? What decision will you make based on this metric?
+
+A great BI developer is 50% data modeler and 50% product designer. Master this balance, and you will always be in high demand.`,
     createdAt: "2024-09-10",
     readTime: "4 min read"
   }
